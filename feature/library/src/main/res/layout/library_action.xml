@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- contentDescription is set in code. -->
+<ImageButton xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="ContentDescription"
+    android:layout_width="@dimen/lk_touch"
+    android:layout_height="@dimen/lk_touch"
+    android:background="@drawable/lk_round" />

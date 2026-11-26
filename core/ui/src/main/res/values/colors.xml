@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- «Ближнє світло», day palette (concept, GPT design direction). GPT owns the design system on gpt/design; these are the
+     concept values until that lands. -->
+<resources>
+    <color name="lk_bg">#F3EEE4</color>
+    <color name="lk_surface">#E6DFD2</color>
+    <color name="lk_surface_pressed">#D8CFBF</color>
+    <color name="lk_text">#1A1A1A</color>
+    <color name="lk_text2">#5A554D</color>
+    <color name="lk_accent">#8A5A12</color>
+    <color name="lk_on_accent">#FFFFFF</color>
+    <color name="lk_track">#CFC6B6</color>
+    <color name="lk_launcher_bg">#0E0F10</color>
+</resources>

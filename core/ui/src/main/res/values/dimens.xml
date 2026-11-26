@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compact defaults: an 800×480 screen at hdpi is only 533×320 dp. Larger screens: values-h480dp, values-h600dp.
+     Driving safety: big touch targets, nothing smaller than 18sp, one big main button. -->
+<resources>
+    <dimen name="lk_touch">64dp</dimen>
+    <dimen name="lk_main_button">96dp</dimen>
+    <dimen name="lk_side_button">72dp</dimen>
+    <dimen name="lk_small_button">56dp</dimen>
+    <dimen name="lk_tile_height">60dp</dimen>
+    <dimen name="lk_row_height">64dp</dimen>
+    <dimen name="lk_pad">12dp</dimen>
+    <dimen name="lk_pad_large">16dp</dimen>
+    <dimen name="lk_radius">14dp</dimen>
+    <dimen name="lk_text_title">30sp</dimen>
+    <dimen name="lk_text_artist">20sp</dimen>
+    <dimen name="lk_text_body">20sp</dimen>
+    <dimen name="lk_text_small">18sp</dimen>
+    <dimen name="lk_index_width">36dp</dimen>
+    <dimen name="lk_progress_height">8dp</dimen>
+</resources>

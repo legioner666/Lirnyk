@@ -1,0 +1,104 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ main, 'claude/**' ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Unit tests
+        run: ./gradlew --no-daemon test
+
+      - name: Lint (all modules)
+        run: ./gradlew --no-daemon :app:lintDebug
+
+      - name: Build APKs (debug + minified release)
+        run: ./gradlew --no-daemon :app:assembleDebug :app:assembleRelease
+
+      # Product guarantees from the concept, enforced on every build.
+      - name: Guard — no internet permission
+        run: |
+          AAPT2=$(ls -d "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          "$AAPT2" dump permissions app/build/outputs/apk/release/app-release.apk | tee perms.txt
+          if grep -E "android.permission.(INTERNET|ACCESS_NETWORK_STATE|ACCESS_WIFI_STATE)" perms.txt; then
+            echo "::error::v1 must not have network permissions"; exit 1
+          fi
+
+      - name: Guard — notification listener reads nothing
+        run: |
+          if grep -rnE "onNotificationPosted|onNotificationRemoved|getActiveNotifications|getSnoozedNotifications|StatusBarNotification" --include=*.kt --include=*.java core feature app; then
+            echo "::error::The notification listener must stay empty (it only unlocks the list of media sessions)"; exit 1
+          fi
+
+      - name: Guard — APK size (8 MB)
+        run: |
+          size=$(stat -c %s app/build/outputs/apk/release/app-release.apk)
+          echo "release APK: $size bytes"
+          echo "### Release APK size: $((size / 1024)) KiB (limit 8192 KiB)" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$size" -gt 8388608 ]; then echo "::error::APK is larger than 8 MB"; exit 1; fi
+
+      - name: Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-${{ github.run_number }}
+          path: |
+            app/build/reports/lint-results-debug.*
+            **/build/reports/tests/**
+          if-no-files-found: ignore
+
+      - name: Collect outputs with checksums
+        run: |
+          mkdir -p out
+          short=$(git rev-parse --short HEAD)
+          branch=$(echo "${GITHUB_REF_NAME}" | tr '/' '-')
+          # Minified release build signed with the public debug key: installs as "app.lirnyk", for testing only.
+          cp app/build/outputs/apk/release/app-release.apk "out/Lirnyk-test-${branch}-${GITHUB_RUN_NUMBER}-${short}.apk"
+          cp app/build/outputs/apk/release/app-release.apk out/Lirnyk-test.apk
+          (cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          {
+            echo "TEST BUILD — not a stable release, not for Google Play. Signed with the public debug key."
+            echo ""
+            echo "Branch: ${GITHUB_REF_NAME}"
+            echo "Commit: ${GITHUB_SHA}"
+            echo "Build: ${GITHUB_RUN_NUMBER} (versionName 0.1.${GITHUB_RUN_NUMBER})"
+            echo ""
+            echo "SHA-256:"
+            echo '```'
+            cat out/SHA256SUMS.txt
+            echo '```'
+          } > notes.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lirnyk-${{ github.run_number }}
+          path: out/*
+
+      - name: Publish test build
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete test-build --yes --cleanup-tag || true
+          gh release create test-build out/* --prerelease --title "Lirnyk test build ${GITHUB_RUN_NUMBER} (${GITHUB_REF_NAME})" --notes-file notes.md --target "${GITHUB_SHA}"

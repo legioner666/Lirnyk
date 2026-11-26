@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- «Ближнє світло», night palette: no white areas, one amber accent. -->
+<resources>
+    <color name="lk_bg">#0E0F10</color>
+    <color name="lk_surface">#17191B</color>
+    <color name="lk_surface_pressed">#24272A</color>
+    <color name="lk_text">#EDE6D9</color>
+    <color name="lk_text2">#A9A196</color>
+    <color name="lk_accent">#FFB347</color>
+    <color name="lk_on_accent">#0E0F10</color>
+    <color name="lk_track">#2C2F33</color>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="lk_touch">80dp</dimen>
+    <dimen name="lk_main_button">128dp</dimen>
+    <dimen name="lk_side_button">88dp</dimen>
+    <dimen name="lk_small_button">64dp</dimen>
+    <dimen name="lk_tile_height">80dp</dimen>
+    <dimen name="lk_row_height">76dp</dimen>
+    <dimen name="lk_pad">16dp</dimen>
+    <dimen name="lk_pad_large">24dp</dimen>
+    <dimen name="lk_text_title">44sp</dimen>
+    <dimen name="lk_text_artist">26sp</dimen>
+    <dimen name="lk_text_body">22sp</dimen>
+    <dimen name="lk_index_width">44dp</dimen>
+</resources>

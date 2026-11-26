@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Platform theme: no AppCompat, so the APK stays small and starts fast on weak head units. -->
+    <style name="Theme.Lirnyk" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/lk_bg</item>
+        <item name="android:colorBackground">@color/lk_bg</item>
+        <item name="android:colorAccent">@color/lk_accent</item>
+        <item name="android:colorPrimary">@color/lk_bg</item>
+        <item name="android:colorPrimaryDark">@color/lk_bg</item>
+        <item name="android:statusBarColor">@color/lk_bg</item>
+        <item name="android:navigationBarColor">@color/lk_bg</item>
+        <item name="android:textColorPrimary">@color/lk_text</item>
+        <item name="android:textColorSecondary">@color/lk_text2</item>
+        <item name="android:textColor">@color/lk_text</item>
+        <item name="android:windowAnimationStyle">@style/Lirnyk.WindowAnimation</item>
+    </style>
+
+    <!-- Animations shorter than 150 ms (concept, driving safety). -->
+    <style name="Lirnyk.WindowAnimation" parent="android:Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:activityOpenExitAnimation">@android:anim/fade_out</item>
+        <item name="android:activityCloseEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:activityCloseExitAnimation">@android:anim/fade_out</item>
+    </style>
+
+    <!-- Parent of the text and button styles below. -->
+    <style name="Lirnyk" />
+
+    <style name="Lirnyk.Title">
+        <item name="android:textColor">@color/lk_text</item>
+        <item name="android:textSize">@dimen/lk_text_title</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    <style name="Lirnyk.Subtitle">
+        <item name="android:textColor">@color/lk_text2</item>
+        <item name="android:textSize">@dimen/lk_text_artist</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    <style name="Lirnyk.Body">
+        <item name="android:textColor">@color/lk_text</item>
+        <item name="android:textSize">@dimen/lk_text_body</item>
+    </style>
+    <style name="Lirnyk.Small">
+        <item name="android:textColor">@color/lk_text2</item>
+        <item name="android:textSize">@dimen/lk_text_small</item>
+    </style>
+    <style name="Lirnyk.Header">
+        <item name="android:textColor">@color/lk_text</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+    </style>
+    <style name="Lirnyk.Button">
+        <item name="android:background">@drawable/lk_button</item>
+        <item name="android:textColor">@color/lk_text</item>
+        <item name="android:textSize">@dimen/lk_text_body</item>
+        <item name="android:minHeight">@dimen/lk_touch</item>
+        <item name="android:paddingStart">@dimen/lk_pad_large</item>
+        <item name="android:paddingEnd">@dimen/lk_pad_large</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:stateListAnimator">@null</item>
+    </style>
+</resources>

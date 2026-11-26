@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 1024×600 at mdpi and up: concept sizes (title 56, artist 28, main button ~160). -->
+<resources>
+    <dimen name="lk_main_button">160dp</dimen>
+    <dimen name="lk_side_button">96dp</dimen>
+    <dimen name="lk_text_title">56sp</dimen>
+    <dimen name="lk_text_artist">28sp</dimen>
+    <dimen name="lk_tile_height">88dp</dimen>
+</resources>
