@@ -94,6 +94,64 @@ S = {
 }
 
 
+# TASK 003: Spotify prototype (spotify/app). Separate table, separate module.
+REMOTE_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "spotify", "app", "src", "main", "res")
+REMOTE = {
+    "remote_app_name": ("Lirnyk Remote", "Лірник Дистанційне", "Lirnyk Pilot"),
+    "remote_prototype": ("Private prototype · Spotify App Remote · not for distribution", "Приватний прототип · Spotify App Remote · не для поширення", "Prywatny prototyp · Spotify App Remote · nie do dystrybucji"),
+    "remote_connect": ("Connect Spotify", "Підключити Spotify", "Połącz Spotify"),
+    "remote_reconnect": ("Connect again", "Підключити знову", "Połącz ponownie"),
+    "remote_authorize": ("Authorize in Spotify", "Авторизувати в Spotify", "Autoryzuj w Spotify"),
+    "remote_disconnect": ("Disconnect", "Відключити", "Rozłącz"),
+    "remote_forget": ("Disconnect and delete data", "Відключити і видалити дані", "Rozłącz i usuń dane"),
+    "remote_forget_done": ("Disconnected. Lirnyk Remote stores nothing about your account now. To revoke the authorization itself, use \"Revoke access\".", "Відключено. Lirnyk Дистанційне більше нічого не зберігає про ваш акаунт. Щоб відкликати саму авторизацію, натисніть «Відкликати доступ».", "Rozłączono. Aplikacja nie przechowuje już danych konta. Aby cofnąć samą autoryzację, użyj „Cofnij dostęp”."),
+    "remote_revoke": ("Revoke access in your Spotify account", "Відкликати доступ в акаунті Spotify", "Cofnij dostęp w koncie Spotify"),
+    "remote_open_spotify": ("Open Spotify", "Відкрити Spotify", "Otwórz Spotify"),
+    "remote_status_not_set_up": ("Not connected. Tap \"Connect Spotify\": Spotify will ask you to allow control.", "Не підключено. Натисніть «Підключити Spotify» — Spotify попросить дозволити керування.", "Nie połączono. Dotknij „Połącz Spotify” — Spotify poprosi o zgodę."),
+    "remote_status_connecting": ("Connecting to Spotify…", "Підключення до Spotify…", "Łączenie ze Spotify…"),
+    "remote_status_connected": ("Connected to Spotify", "Підключено до Spotify", "Połączono ze Spotify"),
+    "remote_status_disconnected": ("Disconnected (authorization kept)", "Відключено (авторизацію збережено)", "Rozłączono (autoryzacja zachowana)"),
+    "remote_p_not_installed": ("Spotify is not installed on this device.", "Spotify не встановлено на цьому пристрої.", "Spotify nie jest zainstalowany."),
+    "remote_p_not_authorized": ("Spotify needs your permission. Tap \"Authorize in Spotify\".", "Spotify потребує вашого дозволу. Натисніть «Авторизувати в Spotify».", "Spotify potrzebuje zgody. Dotknij „Autoryzuj w Spotify”."),
+    "remote_p_auth_failed": ("Spotify refused this app. Check in the Spotify dashboard: package app.lirnyk.remote, the SHA-1 below, redirect URI app.lirnyk.remote://callback, and that your account is in the app's user list.", "Spotify відхилив застосунок. Перевірте в Spotify Dashboard: пакет app.lirnyk.remote, SHA-1 нижче, Redirect URI app.lirnyk.remote://callback і що ваш акаунт є у списку користувачів застосунку.", "Spotify odrzucił aplikację. Sprawdź w panelu Spotify: pakiet app.lirnyk.remote, SHA-1 poniżej, Redirect URI app.lirnyk.remote://callback i listę użytkowników."),
+    "remote_p_not_logged_in": ("Log in to the Spotify app first.", "Спершу увійдіть у застосунок Spotify.", "Najpierw zaloguj się w Spotify."),
+    "remote_p_offline": ("Spotify is offline. App Remote can connect only while Spotify is online.", "Spotify офлайн. App Remote підключається, лише коли Spotify онлайн.", "Spotify jest offline. Połączenie działa tylko online."),
+    "remote_p_too_old": ("The Spotify app is too old. Update Spotify.", "Застосунок Spotify застарий. Оновіть Spotify.", "Aplikacja Spotify jest za stara. Zaktualizuj ją."),
+    "remote_p_lost": ("Spotify closed the connection. Reconnecting…", "Spotify розірвав з'єднання. Підключаюся знову…", "Spotify zamknął połączenie. Ponowne łączenie…"),
+    "remote_p_service": ("Android did not let Spotify start in the background. Open Spotify once, then connect again.", "Android не дозволив Spotify запуститися у фоні. Відкрийте Spotify, потім підключіться знову.", "Android nie pozwolił uruchomić Spotify w tle. Otwórz Spotify i połącz ponownie."),
+    "remote_p_unknown": ("Connection failed: %1$s", "Не вдалося підключитися: %1$s", "Błąd połączenia: %1$s"),
+    "remote_nothing": ("Nothing playing in Spotify", "У Spotify нічого не грає", "Nic nie gra w Spotify"),
+    "remote_play": ("Play", "Грати", "Odtwórz"),
+    "remote_pause": ("Pause", "Пауза", "Pauza"),
+    "remote_next": ("Next", "Далі", "Następny"),
+    "remote_previous": ("Previous", "Назад", "Poprzedni"),
+    "remote_shuffle": ("Shuffle", "Перемішати", "Losowo"),
+    "remote_repeat": ("Repeat", "Повтор", "Powtarzaj"),
+    "remote_cover": ("Album cover", "Обкладинка", "Okładka"),
+    "remote_check_title": ("App identity for the Spotify dashboard", "Дані застосунку для Spotify Dashboard", "Dane aplikacji dla panelu Spotify"),
+    "remote_check_package": ("Package: %1$s", "Пакет: %1$s", "Pakiet: %1$s"),
+    "remote_check_sha1": ("Signing SHA-1: %1$s", "SHA-1 підпису: %1$s", "SHA-1 podpisu: %1$s"),
+    "remote_check_match": ("Matches the SHA-1 registered for Spotify", "Збігається з SHA-1, зареєстрованим для Spotify", "Zgodny z SHA-1 zarejestrowanym w Spotify"),
+    "remote_check_mismatch": ("Does NOT match the expected SHA-1 %1$s: Spotify will refuse the connection", "НЕ збігається з очікуваним SHA-1 %1$s: Spotify відхилить підключення", "NIE zgadza się z oczekiwanym SHA-1 %1$s: Spotify odrzuci połączenie"),
+    "remote_check_unknown": ("Expected SHA-1 not set in this build (run scripts/termux/setup-signing.sh)", "Очікуваний SHA-1 у цій збірці не задано (запустіть scripts/termux/setup-signing.sh)", "Brak oczekiwanego SHA-1 w tej wersji"),
+    "remote_check_redirect": ("Redirect URI: %1$s", "Redirect URI: %1$s", "Redirect URI: %1$s"),
+}
+
+
+def write_table(table, root, lang_dir, idx, untranslatable=()):
+    path = os.path.join(root, lang_dir, "strings.xml")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    lines = ['<?xml version="1.0" encoding="utf-8"?>', "<!-- Generated by scripts/strings.py. Edit the table there, not this file. -->", "<resources>"]
+    for key, vals in table.items():
+        v = escape(vals[idx]).replace("'", "\\'")
+        if '\\"' not in v:
+            v = v.replace('"', '\\"')
+        lines.append(f'    <string name="{key}">{v}</string>')
+    lines.append("</resources>")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+
+
 def write(lang_dir, idx):
     path = os.path.join(ROOT, lang_dir, "strings.xml")
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -116,4 +174,9 @@ if __name__ == "__main__":
     write("values", 0)
     write("values-uk", 1)
     write("values-pl", 2)
-    print(f"{len(S)} strings × 3 languages")
+    bad = [k for k, v in REMOTE.items() if len(v) != 3 or any(not x for x in v)]
+    if bad:
+        sys.exit("missing remote translations: " + ", ".join(bad))
+    for d, i in (("values", 0), ("values-uk", 1), ("values-pl", 2)):
+        write_table(REMOTE, REMOTE_ROOT, d, i)
+    print(f"{len(S)} strings × 3 languages; {len(REMOTE)} remote strings × 3")

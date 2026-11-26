@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lirnyk Remote (TASK 003): controls the installed Spotify app through the official App Remote SDK.
+     No INTERNET permission: the SDK talks to the Spotify app on the device; Spotify itself does the networking.
+     No notification listener, no accessibility service (CI checks the merged manifest). -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:label="@string/remote_app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.LirnykRemote">
+
+        <activity
+            android:name="app.lirnyk.remote.RemoteActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|navigation">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- Redirect URI registered in the Spotify dashboard: app.lirnyk.remote://callback -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="app.lirnyk.remote" android:host="callback" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

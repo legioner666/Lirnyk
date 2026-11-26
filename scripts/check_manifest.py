@@ -24,6 +24,7 @@ ALLOWED_PERMISSIONS = {
     # Added by androidx.core for receivers registered as not exported; signature-level, private to the app.
     "app.lirnyk.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION": "androidx private receiver permission",
     "app.lirnyk.debug.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION": "androidx private receiver permission (debug)",
+    "app.lirnyk.remote.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION": "androidx private receiver permission (Spotify prototype)",
 }
 
 # Play Protect blocks internet-sideloaded apps that declare these (developers.google.com/android/play-protect/warning-dev-guidance),
