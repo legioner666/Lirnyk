@@ -73,3 +73,33 @@ object AutoResumePolicy {
         return if (wants) Decision.RESUME else Decision.PREPARE_PAUSED
     }
 }
+
+/**
+ * What a start of the playback service restores (GPT audit, TASK 002 P0): the saved track exactly, or nothing. A saved track
+ * that is no longer in the library is reported as missing; the queue is never moved to some other song in its place.
+ */
+object ResumePlanner {
+    sealed interface Plan {
+        data object Nothing : Plan
+        /** The saved track is gone from the library (deleted, or a drive that was never indexed). Nothing plays. */
+        data class MissingTrack(val id: String) : Plan
+        data class Restore(val ids: List<String>, val startIndex: Int, val positionMs: Long, val decision: AutoResumePolicy.Decision) : Plan
+    }
+
+    fun plan(state: ResumeState?, autoResume: Boolean, known: (String) -> Boolean, available: (String) -> Boolean): Plan {
+        val current = state?.queue?.currentId ?: return Plan.Nothing
+        if (!known(current)) return Plan.MissingTrack(current)
+        val ids = state.queue.orderedIds().filter(known)
+        return Plan.Restore(ids, ids.indexOf(current), state.positionMs, AutoResumePolicy.decide(state, autoResume, available))
+    }
+}
+
+/** Bounded skipping over files that fail to play (GPT audit P1): never loops forever, also with repeat-all. */
+class FailureBudget {
+    private var failures = 0
+    /** A file failed. Returns true while it is still worth trying the next one. */
+    fun onFailure(queueSize: Int): Boolean { failures++; return failures < queueSize.coerceAtLeast(1) }
+    /** Something really played: the budget starts again. */
+    fun onPlaying() { failures = 0 }
+    val count: Int get() = failures
+}

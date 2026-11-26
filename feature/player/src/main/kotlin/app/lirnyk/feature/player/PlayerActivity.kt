@@ -128,6 +128,7 @@ class PlayerActivity : BaseActivity() {
         }
         val noteText = when {
             s.waitingForMedia -> getString(UiR.string.waiting_for_media)
+            s.savedTrackMissing -> getString(UiR.string.saved_track_missing)
             s.error -> getString(UiR.string.playback_error)
             track != null && !Lirnyk.library.library.value.isAvailable(track) -> getString(UiR.string.track_unavailable)
             else -> null

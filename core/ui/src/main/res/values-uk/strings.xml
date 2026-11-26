@@ -13,6 +13,7 @@
     <string name="favorite">Обране</string>
     <string name="track_unavailable">Трек на носії, який зараз не підключено</string>
     <string name="waiting_for_media">Чекаю на флешку або SD-карту…</string>
+    <string name="saved_track_missing">Трек, що грав, більше не знайдено в бібліотеці. Виберіть музику в бібліотеці.</string>
     <string name="playback_error">Не вдається відтворити цей файл</string>
     <string name="tile_library">Бібліотека</string>
     <string name="tile_sources">Джерела</string>

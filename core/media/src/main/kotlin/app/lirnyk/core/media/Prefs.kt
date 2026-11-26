@@ -37,6 +37,10 @@ class Prefs(context: Context) {
         _favorites.value = next
     }
 
+    var bootLog: String
+        get() = sp.getString(K_BOOT_LOG, "") ?: ""
+        set(v) { sp.edit().putString(K_BOOT_LOG, v).apply() }
+
     var resumeRecord: String?
         get() = sp.getString(K_RESUME, null)
         set(v) { sp.edit().putString(K_RESUME, v).apply() }
@@ -48,5 +52,6 @@ class Prefs(context: Context) {
         const val K_FOLDERS = "picked_folders"
         const val K_FAVORITES = "favorites"
         const val K_RESUME = "resume"
+        const val K_BOOT_LOG = "boot_log"
     }
 }

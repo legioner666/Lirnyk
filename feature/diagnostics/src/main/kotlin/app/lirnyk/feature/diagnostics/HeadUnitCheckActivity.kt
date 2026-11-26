@@ -107,6 +107,7 @@ class HeadUnitCheckActivity : BaseActivity() {
             audioReadPermission = Lirnyk.library.hasAudioPermission(),
             bootReceiverAllowed = Build.VERSION.SDK_INT < 35 && Lirnyk.prefs.autoResume.value,
             startup = HeadUnitReport.Startup(StartupMetrics.firstFrameMs, StartupMetrics.serviceAfterBootMs),
+            bootLog = app.lirnyk.core.media.BootLog.text.lines().filter { it.isNotBlank() },
         )
     }
 

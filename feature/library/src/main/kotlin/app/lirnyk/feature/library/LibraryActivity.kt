@@ -121,6 +121,7 @@ class LibraryActivity : BaseActivity() {
         b.contentDescription = getString(UiR.string.lib_search)
         b.setOnClickListener {
             query = ""; search.setText(""); searchRow.visibility = View.VISIBLE; search.requestFocus()
+            idleReturnSuspended = true
             getSystemService(InputMethodManager::class.java)?.showSoftInput(search, 0)
             refresh(scrollTop = true)
         }
@@ -130,6 +131,7 @@ class LibraryActivity : BaseActivity() {
     private fun closeSearch() {
         if (query == null) return
         query = null
+        idleReturnSuspended = false
         searchRow.visibility = View.GONE
         getSystemService(InputMethodManager::class.java)?.hideSoftInputFromWindow(search.windowToken, 0)
     }

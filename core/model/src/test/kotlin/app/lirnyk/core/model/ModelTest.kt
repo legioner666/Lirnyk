@@ -171,3 +171,38 @@ class LibraryMergeTest {
             LibraryMerge.merge(indexed, listOf(picked.copy(storageVolume = null))).size)
     }
 }
+
+class ResumePlannerTest {
+    private fun state(ids: List<String>, current: String, playing: Boolean = true) =
+        ResumeState(PlayQueue.of(ids, current), 42_000, playing, 0)
+
+    @Test fun missingSavedTrackIsNeverReplacedByAnotherSong() {
+        val plan = ResumePlanner.plan(state(listOf("a", "b", "c"), "b"), true, known = { it != "b" }, available = { true })
+        assertEquals(ResumePlanner.Plan.MissingTrack("b"), plan)
+    }
+
+    @Test fun restoreKeepsTheExactTrackAndPosition() {
+        val plan = ResumePlanner.plan(state(listOf("a", "b", "c"), "c"), true, known = { it != "a" }, available = { true }) as ResumePlanner.Plan.Restore
+        assertEquals(listOf("b", "c"), plan.ids)
+        assertEquals("c", plan.ids[plan.startIndex])
+        assertEquals(42_000, plan.positionMs)
+        assertEquals(AutoResumePolicy.Decision.RESUME, plan.decision)
+    }
+
+    @Test fun lateDriveWaitsAndPausedStaysPaused() {
+        val waiting = ResumePlanner.plan(state(listOf("a"), "a"), true, { true }, { false }) as ResumePlanner.Plan.Restore
+        assertEquals(AutoResumePolicy.Decision.WAIT_FOR_MEDIA, waiting.decision)
+        val paused = ResumePlanner.plan(state(listOf("a"), "a", playing = false), true, { true }, { false }) as ResumePlanner.Plan.Restore
+        assertEquals(AutoResumePolicy.Decision.PREPARE_PAUSED, paused.decision)
+        assertEquals(ResumePlanner.Plan.Nothing, ResumePlanner.plan(null, true, { true }, { true }))
+    }
+
+    @Test fun failureBudgetStopsAfterOnePassEvenWithRepeatAll() {
+        val b = FailureBudget()
+        assertTrue(b.onFailure(3)); assertTrue(b.onFailure(3))
+        assertFalse("every file in a 3-track queue failed: stop", b.onFailure(3))
+        b.onPlaying()
+        assertTrue(b.onFailure(3))
+        assertFalse("single-track queue: one failure is enough", FailureBudget().onFailure(1))
+    }
+}

@@ -32,6 +32,7 @@ object Lirnyk {
         val app = context.applicationContext
         this.versionLabel = versionLabel
         prefs = Prefs(app)
+        BootLog.prefsRef = prefs
         library = LibraryRepository(app, prefs, scope)
         library.start()
     }
@@ -77,4 +78,22 @@ object StartupMetrics {
         val sinceBoot = SystemClock.elapsedRealtime()
         if (sinceBoot < 5 * 60_000L) serviceAfterBootMs = sinceBoot
     }
+}
+
+/**
+ * What happened at the last start after boot (GPT audit P1: boot start must not fail silently). A few lines, newest last,
+ * kept in preferences so the head-unit check can show them after the fact. No track names.
+ */
+object BootLog {
+    private const val MAX_LINES = 8
+
+    fun note(event: String) {
+        if (!::prefsRef.isInitialized) return
+        val line = "${java.text.SimpleDateFormat("MM-dd HH:mm:ss", java.util.Locale.ROOT).format(java.util.Date())} $event"
+        prefsRef.bootLog = (prefsRef.bootLog.lines().filter { it.isNotBlank() } + line).takeLast(MAX_LINES).joinToString("\n")
+    }
+
+    val text: String get() = if (::prefsRef.isInitialized) prefsRef.bootLog else ""
+
+    internal lateinit var prefsRef: Prefs
 }

@@ -26,6 +26,7 @@ S = {
     "favorite": ("Favourite", "Обране", "Ulubione"),
     "track_unavailable": ("The track is on a drive that is not connected", "Трек на носії, який зараз не підключено", "Utwór jest na nośniku, który nie jest podłączony"),
     "waiting_for_media": ("Waiting for the USB drive or SD card…", "Чекаю на флешку або SD-карту…", "Czekam na pendrive lub kartę SD…"),
+    "saved_track_missing": ("The track that was playing is no longer in the library. Choose music in the library.", "Трек, що грав, більше не знайдено в бібліотеці. Виберіть музику в бібліотеці.", "Utworu, który grał, nie ma już w bibliotece. Wybierz muzykę w bibliotece."),
     "playback_error": ("Cannot play this file", "Не вдається відтворити цей файл", "Nie można odtworzyć tego pliku"),
     # tiles
     "tile_library": ("Library", "Бібліотека", "Biblioteka"),

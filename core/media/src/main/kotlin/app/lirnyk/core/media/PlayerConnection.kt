@@ -37,6 +37,8 @@ data class NowPlaying(
     val shuffle: Boolean = false,
     val repeat: RepeatMode = RepeatMode.OFF,
     val waitingForMedia: Boolean = false,
+    /** The saved track is no longer in the library; nothing was restored in its place. */
+    val savedTrackMissing: Boolean = false,
     val error: Boolean = false,
 )
 
@@ -53,16 +55,22 @@ class PlayerConnection(private val context: Context, private val scope: Coroutin
     private val _state = MutableStateFlow(NowPlaying())
     val state: StateFlow<NowPlaying> = _state.asStateFlow()
 
+    /** Bumped by every connect/release: a late answer for an old connection is released, never used (GPT audit P1). */
+    private var generation = 0
+
     fun connect() {
         if (controller != null || pending != null) return
+        val gen = ++generation
         val token = SessionToken(context, ComponentName(context, PlaybackService::class.java))
         val f = MediaController.Builder(context, token).setListener(object : MediaController.Listener {
             override fun onExtrasChanged(controller: MediaController, extras: Bundle) = publish()
         }).buildAsync()
         pending = f
         f.addListener({
+            if (gen != generation) { MediaController.releaseFuture(f); return@addListener }
             pending = null
-            val c = runCatching { f.get() }.getOrNull() ?: return@addListener
+            val c = runCatching { f.get() }.getOrNull()
+            if (c == null) { pendingActions.clear(); return@addListener }
             controller = c
             pendingActions.toList().also { pendingActions.clear() }.forEach { it(c) }
             c.addListener(object : Player.Listener {
@@ -74,6 +82,7 @@ class PlayerConnection(private val context: Context, private val scope: Coroutin
     }
 
     fun release() {
+        generation++
         ticker?.cancel(); ticker = null
         pending?.let { MediaController.releaseFuture(it) }; pending = null
         pendingActions.clear()
@@ -102,6 +111,7 @@ class PlayerConnection(private val context: Context, private val scope: Coroutin
             repeat = c.repeatMode.toModel(),
             waitingForMedia = extras.getBoolean(PlaybackService.EXTRA_WAITING),
             error = extras.getBoolean(PlaybackService.EXTRA_ERROR),
+            savedTrackMissing = extras.getBoolean(PlaybackService.EXTRA_MISSING),
         )
     }
 
@@ -116,7 +126,7 @@ class PlayerConnection(private val context: Context, private val scope: Coroutin
     }
 
     private fun withController(block: (MediaController) -> Unit) {
-        controller?.let(block) ?: pendingActions.add(block)
+        controller?.let(block) ?: run { if (pendingActions.size < MAX_PENDING) pendingActions.add(block) }
     }
 
     fun togglePlay() = withController { c ->
@@ -133,6 +143,8 @@ class PlayerConnection(private val context: Context, private val scope: Coroutin
     fun previous() = withController { it.seekToPrevious() }
 
     fun seekTo(ms: Long) = withController { it.seekTo(ms) }
+    private companion object { const val MAX_PENDING = 8 }
+
     fun toggleShuffle() = withController { it.shuffleModeEnabled = !it.shuffleModeEnabled }
     fun cycleRepeat() = withController { c ->
         c.repeatMode = when (c.repeatMode.toModel()) { RepeatMode.OFF -> RepeatMode.ALL; RepeatMode.ALL -> RepeatMode.ONE; RepeatMode.ONE -> RepeatMode.OFF }.toPlayer()

@@ -1,13 +1,17 @@
 name: Android CI
 
+# Main Lirnyk app (app.lirnyk). The Spotify prototype has its own private workflow on claude/spotify.
 on:
   push:
-    branches: [ main, 'claude/**' ]
+    branches: [ main, 'claude/mvp' ]
+    paths-ignore: [ 'docs/**', '**/*.md' ]
   pull_request:
+    paths-ignore: [ 'docs/**', '**/*.md' ]
   workflow_dispatch:
 
+# Least privilege: the build reads; only the publish job may write, and only for claude/mvp pushes (GPT audit P1).
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -40,6 +44,8 @@ jobs:
           if [ -n "$KEYSTORE_BASE64" ]; then
             echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/lirnyk-test.p12"
             echo "LIRNYK_TEST_KEYSTORE=$RUNNER_TEMP/lirnyk-test.p12" >> "$GITHUB_ENV"
+          else
+            echo "::warning::No test key (run scripts/termux/setup-signing.sh): the APK is signed with this runner's debug key, so it cannot update an earlier install."
           fi
 
       - name: Build APKs (debug + minified release)
@@ -71,15 +77,11 @@ jobs:
           APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
           "$APKSIGNER" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk | tee signature.txt
           grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" signature.txt
-          { echo "### Signature"; echo '```'; grep -E "Verified using|Signer #1 certificate (DN|SHA-256)" signature.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-          if grep -q "CN=Android Debug" signature.txt; then
-            echo "::warning::Signed with the runner's debug key (secret LIRNYK_TEST_KEYSTORE_BASE64 not set): the certificate changes on every build."
-          fi
+          { echo "### Signature"; echo '```'; grep -E "Verified using|Signer #1 certificate (DN|SHA-256|SHA-1)" signature.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Guard — APK size (8 MB)
         run: |
           size=$(stat -c %s app/build/outputs/apk/release/app-release.apk)
-          echo "release APK: $size bytes"
           echo "### Release APK size: $((size / 1024)) KiB (limit 8192 KiB)" >> "$GITHUB_STEP_SUMMARY"
           if [ "$size" -gt 8388608 ]; then echo "::error::APK is larger than 8 MB"; exit 1; fi
 
@@ -98,34 +100,45 @@ jobs:
           mkdir -p out
           short=$(git rev-parse --short HEAD)
           branch=$(echo "${GITHUB_REF_NAME}" | tr '/' '-')
-          # Minified release build signed with the public debug key: installs as "app.lirnyk", for testing only.
           cp app/build/outputs/apk/release/app-release.apk "out/Lirnyk-test-${branch}-${GITHUB_RUN_NUMBER}-${short}.apk"
-          cp app/build/outputs/apk/release/app-release.apk out/Lirnyk-test.apk
           (cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt)
           signer=$(grep -m1 "Signer #1 certificate SHA-256" signature.txt | sed 's/.*: //')
           {
             echo "TEST BUILD — not a stable release, not for Google Play."
-            echo "Signing certificate SHA-256: ${signer}"
             echo ""
             echo "Branch: ${GITHUB_REF_NAME}"
             echo "Commit: ${GITHUB_SHA}"
             echo "Build: ${GITHUB_RUN_NUMBER} (versionName 0.1.${GITHUB_RUN_NUMBER})"
+            echo "Signing certificate SHA-256: ${signer}"
             echo ""
             echo "SHA-256:"
             echo '```'
             cat out/SHA256SUMS.txt
             echo '```'
-          } > notes.md
+          } > out/NOTES.md
 
       - uses: actions/upload-artifact@v4
         with:
           name: lirnyk-${{ github.run_number }}
           path: out/*
 
+  # One immutable pre-release per build of claude/mvp: links never change, earlier builds stay downloadable.
+  publish:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/claude/mvp'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: lirnyk-${{ github.run_number }}
+          path: out
+
       - name: Publish test build
-        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          gh release delete test-build --yes --cleanup-tag || true
-          gh release create test-build out/* --prerelease --title "Lirnyk test build ${GITHUB_RUN_NUMBER} (${GITHUB_REF_NAME})" --notes-file notes.md --target "${GITHUB_SHA}"
+          tag="mvp-build-${GITHUB_RUN_NUMBER}"
+          gh release create "$tag" out/*.apk out/SHA256SUMS.txt --prerelease --title "Lirnyk test build ${GITHUB_RUN_NUMBER} (claude/mvp)" --notes-file out/NOTES.md --target "${GITHUB_SHA}"

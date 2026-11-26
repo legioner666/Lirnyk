@@ -43,6 +43,8 @@ data class HeadUnitReport(
     val audioReadPermission: Boolean,
     val bootReceiverAllowed: Boolean,
     val startup: Startup?,
+    /** Last events of the start after boot (no track names). */
+    val bootLog: List<String> = emptyList(),
 ) {
     data class Screen(val widthPx: Int, val heightPx: Int, val densityDpi: Int, val smallestWidthDp: Int, val nightMode: String)
     data class Volume(val kind: SourceKind, val state: String, val removable: Boolean, val primary: Boolean)
@@ -66,6 +68,9 @@ data class HeadUnitReport(
         keys.forEach { appendLine("  ${it.name} (${it.keyCode}) via ${it.via}${it.action?.let { a -> " → $a" } ?: " → not a media key"}") }
         appendLine("Players with a public media connection: ${if (externalPlayers.isEmpty()) "none found" else ""}")
         externalPlayers.forEach { appendLine("  $it") }
+        appendLine("Boot start log:")
+        if (bootLog.isEmpty()) appendLine("  (empty)")
+        bootLog.forEach { appendLine("  $it") }
         startup?.let { appendLine("Startup: first frame ${it.processToFirstFrameMs ?: "?"} ms after process start; service ${it.bootToServiceMs ?: "?"} ms after boot") }
     }
 
@@ -87,6 +92,7 @@ data class HeadUnitReport(
             append("\"permissions\":{\"audio\":$audioReadPermission,\"notifications\":${q(notificationPermission)},\"bootReceiver\":$bootReceiverAllowed},")
             append("\"keys\":").append(list(keys.map { "{\"code\":${it.keyCode},\"name\":${q(it.name)},\"via\":${q(it.via)},\"action\":${it.action?.let { a -> q(a.name) } ?: "null"}}" })).append(',')
             append("\"externalPlayers\":").append(list(externalPlayers.map(::q))).append(',')
+            append("\"bootLog\":").append(list(bootLog.map(::q))).append(',')
             append("\"startup\":").append(startup?.let { "{\"firstFrameMs\":${it.processToFirstFrameMs ?: "null"},\"bootToServiceMs\":${it.bootToServiceMs ?: "null"}}" } ?: "null")
             append('}')
         }

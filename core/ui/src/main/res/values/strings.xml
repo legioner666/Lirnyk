@@ -14,6 +14,7 @@
     <string name="favorite">Favourite</string>
     <string name="track_unavailable">The track is on a drive that is not connected</string>
     <string name="waiting_for_media">Waiting for the USB drive or SD card…</string>
+    <string name="saved_track_missing">The track that was playing is no longer in the library. Choose music in the library.</string>
     <string name="playback_error">Cannot play this file</string>
     <string name="tile_library">Library</string>
     <string name="tile_sources">Sources</string>

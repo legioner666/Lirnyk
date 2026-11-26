@@ -95,8 +95,13 @@ abstract class BaseActivity : Activity() {
         scheduleIdleReturn()
     }
 
+    /** Set while the user is typing or editing: the screen is never closed under their hands. */
+    protected var idleReturnSuspended = false
+        set(v) { field = v; scheduleIdleReturn() }
+
     private fun scheduleIdleReturn() {
         handler.removeCallbacks(idleReturn)
+        if (idleReturnSuspended) return
         idleReturnSeconds?.let { handler.postDelayed(idleReturn, it * 1000L) }
     }
 

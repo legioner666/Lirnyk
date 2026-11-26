@@ -24,6 +24,7 @@ import app.lirnyk.core.ui.R as UiR
 
 /** Where the music comes from: audio permission, drives, picked folders (for USB ports the system does not index). */
 class SourcesActivity : BaseActivity() {
+    override val idleReturnSeconds: Int? = null   // setup and permissions are never dismissed (GPT audit)
     private lateinit var form: Form
     private var noPicker = false
     private var last: Quad? = null
@@ -117,6 +118,7 @@ class SourcesActivity : BaseActivity() {
 
 /** Behaviour settings: auto-resume, theme, screen, notifications, about. */
 class SettingsActivity : BaseActivity() {
+    override val idleReturnSeconds: Int? = null
     private lateinit var form: Form
 
     override fun onCreate(savedInstanceState: Bundle?) {

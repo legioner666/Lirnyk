@@ -13,6 +13,7 @@
     <string name="favorite">Ulubione</string>
     <string name="track_unavailable">Utwór jest na nośniku, który nie jest podłączony</string>
     <string name="waiting_for_media">Czekam na pendrive lub kartę SD…</string>
+    <string name="saved_track_missing">Utworu, który grał, nie ma już w bibliotece. Wybierz muzykę w bibliotece.</string>
     <string name="playback_error">Nie można odtworzyć tego pliku</string>
     <string name="tile_library">Biblioteka</string>
     <string name="tile_sources">Źródła</string>

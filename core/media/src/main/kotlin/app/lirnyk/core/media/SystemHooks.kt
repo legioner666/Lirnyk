@@ -14,12 +14,15 @@ import app.lirnyk.core.model.ResumeState
  */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action !in BOOT_ACTIONS || Build.VERSION.SDK_INT >= 35) return
+        if (intent.action !in BOOT_ACTIONS) return
+        if (Build.VERSION.SDK_INT >= 35) { BootLog.note("boot: Android 15+ forbids playback start from boot; continues when Lirnyk is opened"); return }
         val prefs = Lirnyk.prefs
-        if (!prefs.autoResume.value) return
-        val state = ResumeState.decode(prefs.resumeRecord) ?: return
-        if (!state.wasPlaying) return
+        if (!prefs.autoResume.value) { BootLog.note("boot: auto-resume off"); return }
+        val state = ResumeState.decode(prefs.resumeRecord)
+        if (state == null || !state.wasPlaying) { BootLog.note("boot: music was not playing"); return }
         runCatching { context.startService(Intent(context, PlaybackService::class.java).setAction(PlaybackService.ACTION_BOOT_START)) }
+            .onSuccess { BootLog.note("boot: playback service requested") }
+            .onFailure { BootLog.note("boot: service start refused (${it.javaClass.simpleName})") }
     }
 
     private companion object {
