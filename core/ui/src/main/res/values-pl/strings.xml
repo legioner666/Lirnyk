@@ -50,7 +50,7 @@
     <string name="src_unmounted">niepodłączony</string>
     <string name="src_tracks">Utworów: %1$d, dostępnych: %2$d</string>
     <string name="src_other_players">Inne odtwarzacze</string>
-    <string name="src_other_players_body">Sterowanie Spotify i innymi odtwarzaczami pojawi się w kolejnym etapie. Test radia już pokazuje, czy radio pozwala je widzieć.</string>
+    <string name="src_other_players_body">Sterowanie innymi odtwarzaczami pojawi się później, tylko przez oficjalne połączenia Androida. Test radia pokazuje, które odtwarzacze je udostępniają.</string>
     <string name="set_title">Ustawienia</string>
     <string name="set_autoresume">Wznawiaj muzykę po uruchomieniu radia</string>
     <string name="set_autoresume_body">Tylko jeśli muzyka grała przy wyłączeniu auta. Ten sam utwór, to samo miejsce.</string>
@@ -69,8 +69,7 @@
     <string name="chk_share">Wyślij raport</string>
     <string name="chk_copy">Kopiuj</string>
     <string name="chk_copied">Raport skopiowany</string>
-    <string name="chk_sessions_grant">Pozwól Lirnyk widzieć inne odtwarzacze</string>
-    <string name="chk_sessions_body">Android pokazuje sterowanie innymi odtwarzaczami tylko aplikacjom z dostępem do powiadomień. Lirnyk nie czyta ani nie zapisuje powiadomień. Opcjonalne.</string>
-    <string name="chk_restricted_hint">Jeśli Android pisze, że ustawienie jest ograniczone (instalacja z pliku): otwórz Lirnyk w Informacjach o aplikacji, menu ⋮ → Zezwól na ograniczone ustawienia i spróbuj ponownie.</string>
-    <string name="chk_no_settings_screen">To radio nie ma ekranu dostępu do powiadomień</string>
+    <string name="chk_players">Odtwarzacze z oficjalnym połączeniem multimediów</string>
+    <string name="chk_players_body">Aplikacje na tym radiu udostępniające publiczne połączenie multimediów Androida. Lirnyk będzie sterować innymi odtwarzaczami tylko przez takie oficjalne połączenia (kolejny etap). Nie prosi o dostęp do powiadomień.</string>
+    <string name="chk_players_none">Nie znaleziono</string>
 </resources>

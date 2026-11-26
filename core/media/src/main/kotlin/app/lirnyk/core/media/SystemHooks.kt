@@ -1,16 +1,10 @@
 package app.lirnyk.core.media
 
 import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.media.session.MediaSessionManager
-import android.media.session.PlaybackState
 import android.os.Build
-import android.provider.Settings
-import android.service.notification.NotificationListenerService
 import app.lirnyk.core.model.AutoResumePolicy
-import app.lirnyk.core.model.HeadUnitReport
 import app.lirnyk.core.model.ResumeState
 
 /**
@@ -34,41 +28,21 @@ class BootReceiver : BroadcastReceiver() {
 }
 
 /**
- * Exists only so Android shows Lirnyk other players' media sessions after the user grants "notification access".
- * It deliberately overrides nothing: no notification is read, stored or sent anywhere. CI fails if that changes.
+ * Installed players that offer Android's public media connection (the same one Android Auto-style hosts use). Lirnyk has
+ * no notification access (Play Protect blocks sideloaded apps that declare it), so this is the official route to other
+ * players; whether each app accepts a connection from Lirnyk is that app's decision and is checked in a later stage.
  */
-class SessionAccessListener : NotificationListenerService()
-
-/** Other players visible through [SessionAccessListener] (head-unit check; the remote control comes in the next stage). */
-object SessionsProbe {
-    fun accessGranted(context: Context): Boolean {
-        val flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners") ?: return false
-        val me = ComponentName(context, SessionAccessListener::class.java)
-        return flat.split(':').any { ComponentName.unflattenFromString(it) == me }
-    }
-
-    fun probe(context: Context): HeadUnitReport.SessionsInfo {
-        if (!accessGranted(context)) return HeadUnitReport.SessionsInfo("not granted", emptyList())
-        return runCatching {
-            val msm = context.getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
-            val sessions = msm.getActiveSessions(ComponentName(context, SessionAccessListener::class.java))
-            HeadUnitReport.SessionsInfo("granted", sessions.filter { it.packageName != context.packageName }.map { c ->
-                val st = c.playbackState
-                HeadUnitReport.Player(c.packageName, stateName(st?.state), actionNames(st?.actions ?: 0))
-            })
-        }.getOrElse { HeadUnitReport.SessionsInfo("error: ${it.javaClass.simpleName}", emptyList()) }
-    }
-
-    private fun stateName(s: Int?): String = when (s) {
-        PlaybackState.STATE_PLAYING -> "PLAYING"; PlaybackState.STATE_PAUSED -> "PAUSED"; PlaybackState.STATE_STOPPED -> "STOPPED"
-        PlaybackState.STATE_BUFFERING -> "BUFFERING"; PlaybackState.STATE_ERROR -> "ERROR"; PlaybackState.STATE_NONE, null -> "NONE"
-        else -> "OTHER($s)"
-    }
-
-    private fun actionNames(a: Long): List<String> = listOfNotNull(
-        "PLAY_PAUSE".takeIf { a and PlaybackState.ACTION_PLAY_PAUSE != 0L || (a and PlaybackState.ACTION_PLAY != 0L && a and PlaybackState.ACTION_PAUSE != 0L) },
-        "NEXT".takeIf { a and PlaybackState.ACTION_SKIP_TO_NEXT != 0L },
-        "PREVIOUS".takeIf { a and PlaybackState.ACTION_SKIP_TO_PREVIOUS != 0L },
-        "SEEK".takeIf { a and PlaybackState.ACTION_SEEK_TO != 0L },
+object ExternalPlayersProbe {
+    private val ACTIONS = listOf(
+        "androidx.media3.session.MediaSessionService",
+        "androidx.media3.session.MediaLibraryService",
+        "android.media.browse.MediaBrowserService",
     )
+
+    fun list(context: Context): List<String> = ACTIONS.flatMap { action ->
+        runCatching {
+            @Suppress("DEPRECATION")
+            context.packageManager.queryIntentServices(Intent(action), 0).map { it.serviceInfo.packageName }
+        }.getOrDefault(emptyList())
+    }.filter { it != context.packageName }.distinct().sorted()
 }

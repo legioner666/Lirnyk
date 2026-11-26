@@ -37,7 +37,8 @@ data class HeadUnitReport(
     val decoders: Map<String, Boolean>,
     val library: LibraryCounts,
     val keys: List<KeySeen>,
-    val sessions: SessionsInfo,
+    /** Packages that offer Android's public media connection (MediaSessionService / MediaBrowserService). */
+    val externalPlayers: List<String>,
     val notificationPermission: String,
     val audioReadPermission: Boolean,
     val bootReceiverAllowed: Boolean,
@@ -47,8 +48,6 @@ data class HeadUnitReport(
     data class Volume(val kind: SourceKind, val state: String, val removable: Boolean, val primary: Boolean)
     data class LibraryCounts(val tracks: Int, val available: Int, val folders: Int, val pickedFolders: Int)
     data class KeySeen(val keyCode: Int, val name: String, val via: String, val action: SteeringKeys.Action?)
-    data class SessionsInfo(val access: String, val players: List<Player>)
-    data class Player(val packageName: String, val state: String, val actions: List<String>)
     data class Startup(val processToFirstFrameMs: Long?, val bootToServiceMs: Long?)
 
     fun toText(): String = buildString {
@@ -65,8 +64,8 @@ data class HeadUnitReport(
         appendLine("Keys pressed during the check:")
         if (keys.isEmpty()) appendLine("  none (press the steering-wheel buttons while this screen is open)")
         keys.forEach { appendLine("  ${it.name} (${it.keyCode}) via ${it.via}${it.action?.let { a -> " → $a" } ?: " → not a media key"}") }
-        appendLine("Other players (MediaSession): ${sessions.access}")
-        sessions.players.forEach { appendLine("  ${it.packageName} · ${it.state} · ${it.actions.joinToString(",")}") }
+        appendLine("Players with a public media connection: ${if (externalPlayers.isEmpty()) "none found" else ""}")
+        externalPlayers.forEach { appendLine("  $it") }
         startup?.let { appendLine("Startup: first frame ${it.processToFirstFrameMs ?: "?"} ms after process start; service ${it.bootToServiceMs ?: "?"} ms after boot") }
     }
 
@@ -75,7 +74,7 @@ data class HeadUnitReport(
         fun list(items: List<String>) = items.joinToString(",", "[", "]")
         return buildString {
             append('{')
-            append("\"format\":\"lirnyk-headunit-1\",")
+            append("\"format\":\"lirnyk-headunit-2\",")
             append("\"appVersion\":").append(q(appVersion)).append(',')
             append("\"device\":{\"manufacturer\":").append(q(manufacturer)).append(",\"model\":").append(q(model))
             append(",\"android\":").append(q(androidRelease)).append(",\"sdk\":").append(sdk)
@@ -87,8 +86,7 @@ data class HeadUnitReport(
             append("\"library\":{\"tracks\":${library.tracks},\"available\":${library.available},\"folders\":${library.folders},\"pickedFolders\":${library.pickedFolders}},")
             append("\"permissions\":{\"audio\":$audioReadPermission,\"notifications\":${q(notificationPermission)},\"bootReceiver\":$bootReceiverAllowed},")
             append("\"keys\":").append(list(keys.map { "{\"code\":${it.keyCode},\"name\":${q(it.name)},\"via\":${q(it.via)},\"action\":${it.action?.let { a -> q(a.name) } ?: "null"}}" })).append(',')
-            append("\"sessions\":{\"access\":").append(q(sessions.access)).append(",\"players\":")
-            append(list(sessions.players.map { "{\"package\":${q(it.packageName)},\"state\":${q(it.state)},\"actions\":${list(it.actions.map(::q))}}" })).append("},")
+            append("\"externalPlayers\":").append(list(externalPlayers.map(::q))).append(',')
             append("\"startup\":").append(startup?.let { "{\"firstFrameMs\":${it.processToFirstFrameMs ?: "null"},\"bootToServiceMs\":${it.bootToServiceMs ?: "null"}}" } ?: "null")
             append('}')
         }

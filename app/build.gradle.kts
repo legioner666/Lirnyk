@@ -7,6 +7,10 @@ plugins {
 val buildNumber = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInt()
 val gitCommit = System.getenv("GITHUB_SHA")?.take(7) ?: "local"
 
+// Test-build signing key from CI secrets (LIRNYK_TEST_KEYSTORE / _PASSWORD). Without it the build falls back to the debug key,
+// whose certificate changes on every CI runner — then each new APK needs the old one uninstalled first.
+val testKeystore = System.getenv("LIRNYK_TEST_KEYSTORE")?.let { file(it) }?.takeIf { it.exists() }
+
 android {
     namespace = "app.lirnyk"
     compileSdk = 36
@@ -24,18 +28,33 @@ android {
 
     buildFeatures { buildConfig = true }
 
+    signingConfigs {
+        if (testKeystore != null) {
+            create("test") {
+                storeFile = testKeystore
+                storeType = "PKCS12"
+                storePassword = System.getenv("LIRNYK_TEST_KEYSTORE_PASSWORD")
+                keyAlias = "lirnyk-test"
+                keyPassword = System.getenv("LIRNYK_TEST_KEYSTORE_PASSWORD")
+                enableV1Signing = true   // Android 6 head units
+                enableV2Signing = true
+                enableV3Signing = true
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
         }
         release {
-            // Minified, size-checked test build. Signed with the debug key until the owner creates a release key
-            // (never published to Google Play without the owner's decision).
+            // Minified, size-checked test build, signed with the test key (or the debug key as a fallback). Not a Play release:
+            // that needs the owner's own release key and decision.
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("test") ?: signingConfigs.getByName("debug")
         }
     }
 

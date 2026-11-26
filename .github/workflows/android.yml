@@ -33,22 +33,47 @@ jobs:
       - name: Lint (all modules)
         run: ./gradlew --no-daemon :app:lintDebug
 
-      - name: Build APKs (debug + minified release)
-        run: ./gradlew --no-daemon :app:assembleDebug :app:assembleRelease
-
-      # Product guarantees from the concept, enforced on every build.
-      - name: Guard — no internet permission
+      - name: Test signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.LIRNYK_TEST_KEYSTORE_BASE64 }}
         run: |
-          AAPT2=$(ls -d "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
-          "$AAPT2" dump permissions app/build/outputs/apk/release/app-release.apk | tee perms.txt
-          if grep -E "android.permission.(INTERNET|ACCESS_NETWORK_STATE|ACCESS_WIFI_STATE)" perms.txt; then
-            echo "::error::v1 must not have network permissions"; exit 1
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/lirnyk-test.p12"
+            echo "LIRNYK_TEST_KEYSTORE=$RUNNER_TEMP/lirnyk-test.p12" >> "$GITHUB_ENV"
           fi
 
-      - name: Guard — notification listener reads nothing
+      - name: Build APKs (debug + minified release)
+        env:
+          LIRNYK_TEST_KEYSTORE_PASSWORD: ${{ secrets.LIRNYK_TEST_KEYSTORE_PASSWORD }}
+        run: ./gradlew --no-daemon :app:assembleDebug :app:assembleRelease
+
+      # Product guarantees, enforced on every build against the final (merged) manifest and the APK itself.
+      - name: Guard — merged manifest (permission allowlist, no sensitive services)
         run: |
-          if grep -rnE "onNotificationPosted|onNotificationRemoved|getActiveNotifications|getSnoozedNotifications|StatusBarNotification" --include=*.kt --include=*.java core feature app; then
-            echo "::error::The notification listener must stay empty (it only unlocks the list of media sessions)"; exit 1
+          AAPT2=$(ls -d "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          "$AAPT2" dump permissions app/build/outputs/apk/release/app-release.apk > perms.txt
+          manifest=$(find app/build/intermediates/merged_manifest/release -name AndroidManifest.xml | head -1)
+          echo "merged manifest: $manifest"
+          python3 scripts/check_manifest.py "$manifest" perms.txt
+          "$AAPT2" dump xmltree --file AndroidManifest.xml app/build/outputs/apk/release/app-release.apk > manifest-tree.txt
+          if grep -E "NotificationListenerService|BIND_NOTIFICATION_LISTENER|AccessibilityService|BIND_ACCESSIBILITY" manifest-tree.txt; then
+            echo "::error::the APK manifest contains a notification listener or accessibility service"; exit 1
+          fi
+
+      - name: Guard — no notification or accessibility code
+        run: |
+          if grep -rnE "NotificationListenerService|AccessibilityService|onNotificationPosted|getActiveNotifications|StatusBarNotification|getActiveSessions" --include=*.kt --include=*.java core feature app; then
+            echo "::error::Lirnyk must not read notifications or use accessibility services"; exit 1
+          fi
+
+      - name: Signature
+        run: |
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk | tee signature.txt
+          grep -q "Verified using v2 scheme (APK Signature Scheme v2): true" signature.txt
+          { echo "### Signature"; echo '```'; grep -E "Verified using|Signer #1 certificate (DN|SHA-256)" signature.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          if grep -q "CN=Android Debug" signature.txt; then
+            echo "::warning::Signed with the runner's debug key (secret LIRNYK_TEST_KEYSTORE_BASE64 not set): the certificate changes on every build."
           fi
 
       - name: Guard — APK size (8 MB)
@@ -77,8 +102,10 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk "out/Lirnyk-test-${branch}-${GITHUB_RUN_NUMBER}-${short}.apk"
           cp app/build/outputs/apk/release/app-release.apk out/Lirnyk-test.apk
           (cd out && sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          signer=$(grep -m1 "Signer #1 certificate SHA-256" signature.txt | sed 's/.*: //')
           {
-            echo "TEST BUILD — not a stable release, not for Google Play. Signed with the public debug key."
+            echo "TEST BUILD — not a stable release, not for Google Play."
+            echo "Signing certificate SHA-256: ${signer}"
             echo ""
             echo "Branch: ${GITHUB_REF_NAME}"
             echo "Commit: ${GITHUB_SHA}"

@@ -141,7 +141,7 @@ class ModelTest {
             AudioFormats.decoderMimes.keys.associateWith { true },
             HeadUnitReport.LibraryCounts(120, 100, 9, 1),
             listOf(HeadUnitReport.KeySeen(87, "KEYCODE_MEDIA_NEXT", "player", SteeringKeys.actionFor(87))),
-            HeadUnitReport.SessionsInfo("granted", listOf(HeadUnitReport.Player("com.spotify.music", "PLAYING", listOf("PLAY_PAUSE", "NEXT")))),
+            listOf("com.example.player"),
             "granted", true, true, HeadUnitReport.Startup(820, null),
         )
         val json = r.toJson()
@@ -149,6 +149,7 @@ class ModelTest {
         assertEquals(json.count { it == '{' }, json.count { it == '}' })
         assertTrue("\"action\":\"NEXT\"" in json)
         assertTrue("UIS7862" in r.toText())
+        assertTrue("\"externalPlayers\":[\"com.example.player\"]" in json)
         assertEquals(SteeringKeys.Action.PLAY_PAUSE, SteeringKeys.actionFor(79))
         assertNull(SteeringKeys.actionFor(4))
     }

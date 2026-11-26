@@ -50,7 +50,7 @@
     <string name="src_unmounted">не підключено</string>
     <string name="src_tracks">Треків: %1$d, доступно: %2$d</string>
     <string name="src_other_players">Інші плеєри</string>
-    <string name="src_other_players_body">Керування Spotify та іншими плеєрами — на наступному етапі. «Перевірка магнітоли» вже показує, чи ця магнітола дозволяє Lirnyk їх бачити.</string>
+    <string name="src_other_players_body">Керування іншими плеєрами — на наступному етапі, лише через офіційні підключення Android. «Перевірка магнітоли» показує, які встановлені плеєри їх надають.</string>
     <string name="set_title">Налаштування</string>
     <string name="set_autoresume">Продовжувати музику після запуску магнітоли</string>
     <string name="set_autoresume_body">Лише якщо музика грала, коли авто вимкнули. Той самий трек, те саме місце.</string>
@@ -69,8 +69,7 @@
     <string name="chk_share">Надіслати звіт</string>
     <string name="chk_copy">Копіювати</string>
     <string name="chk_copied">Звіт скопійовано</string>
-    <string name="chk_sessions_grant">Дозволити Lirnyk бачити інші плеєри</string>
-    <string name="chk_sessions_body">Android показує керування іншими плеєрами лише застосункам із доступом до сповіщень. Lirnyk не читає і не зберігає сповіщення, а лише бачить активні плеєри. Необов\'язково.</string>
-    <string name="chk_restricted_hint">Якщо Android пише, що налаштування обмежене (застосунок встановлено з файлу): відкрийте Lirnyk у системних «Відомостях про застосунок», меню ⋮ → «Дозволити обмежені налаштування», і спробуйте ще раз.</string>
-    <string name="chk_no_settings_screen">На цій магнітолі немає екрана доступу до сповіщень</string>
+    <string name="chk_players">Плеєри з офіційним медіапідключенням</string>
+    <string name="chk_players_body">Застосунки на цій магнітолі, які надають публічне медіапідключення Android. Керувати іншими плеєрами Lirnyk буде лише через такі офіційні підключення (на наступному етапі). Доступу до сповіщень він не просить.</string>
+    <string name="chk_players_none">Не знайдено</string>
 </resources>

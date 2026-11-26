@@ -66,7 +66,7 @@ S = {
     "src_unmounted": ("not connected", "не підключено", "niepodłączony"),
     "src_tracks": ("Tracks: %1$d, available: %2$d", "Треків: %1$d, доступно: %2$d", "Utworów: %1$d, dostępnych: %2$d"),
     "src_other_players": ("Other players", "Інші плеєри", "Inne odtwarzacze"),
-    "src_other_players_body": ("Controlling Spotify and other players comes in the next stage. The head unit check already shows whether this unit lets Lirnyk see them.", "Керування Spotify та іншими плеєрами — на наступному етапі. «Перевірка магнітоли» вже показує, чи ця магнітола дозволяє Lirnyk їх бачити.", "Sterowanie Spotify i innymi odtwarzaczami pojawi się w kolejnym etapie. Test radia już pokazuje, czy radio pozwala je widzieć."),
+    "src_other_players_body": ("Controlling other players comes in a later stage, only through official Android connections. The head unit check lists which installed players offer one.", "Керування іншими плеєрами — на наступному етапі, лише через офіційні підключення Android. «Перевірка магнітоли» показує, які встановлені плеєри їх надають.", "Sterowanie innymi odtwarzaczami pojawi się później, tylko przez oficjalne połączenia Androida. Test radia pokazuje, które odtwarzacze je udostępniają."),
     # settings
     "set_title": ("Settings", "Налаштування", "Ustawienia"),
     "set_autoresume": ("Continue music after the head unit starts", "Продовжувати музику після запуску магнітоли", "Wznawiaj muzykę po uruchomieniu radia"),
@@ -87,10 +87,9 @@ S = {
     "chk_share": ("Share report", "Надіслати звіт", "Wyślij raport"),
     "chk_copy": ("Copy", "Копіювати", "Kopiuj"),
     "chk_copied": ("Report copied", "Звіт скопійовано", "Raport skopiowany"),
-    "chk_sessions_grant": ("Let Lirnyk see other players", "Дозволити Lirnyk бачити інші плеєри", "Pozwól Lirnyk widzieć inne odtwarzacze"),
-    "chk_sessions_body": ("Android shows other players' controls only to apps with notification access. Lirnyk does not read or store notifications; it only lists active players. Optional.", "Android показує керування іншими плеєрами лише застосункам із доступом до сповіщень. Lirnyk не читає і не зберігає сповіщення, а лише бачить активні плеєри. Необов'язково.", "Android pokazuje sterowanie innymi odtwarzaczami tylko aplikacjom z dostępem do powiadomień. Lirnyk nie czyta ani nie zapisuje powiadomień. Opcjonalne."),
-    "chk_restricted_hint": ("If Android says the setting is restricted (app installed from a file): open Lirnyk in system App info, menu ⋮ → Allow restricted settings, then try again.", "Якщо Android пише, що налаштування обмежене (застосунок встановлено з файлу): відкрийте Lirnyk у системних «Відомостях про застосунок», меню ⋮ → «Дозволити обмежені налаштування», і спробуйте ще раз.", "Jeśli Android pisze, że ustawienie jest ograniczone (instalacja z pliku): otwórz Lirnyk w Informacjach o aplikacji, menu ⋮ → Zezwól na ograniczone ustawienia i spróbuj ponownie."),
-    "chk_no_settings_screen": ("This head unit has no notification access screen", "На цій магнітолі немає екрана доступу до сповіщень", "To radio nie ma ekranu dostępu do powiadomień"),
+    "chk_players": ("Players with an official media connection", "Плеєри з офіційним медіапідключенням", "Odtwarzacze z oficjalnym połączeniem multimediów"),
+    "chk_players_body": ("Apps on this head unit that offer Android's public media connection. Lirnyk will control other players only through such official connections (later stage). It does not ask for notification access.", "Застосунки на цій магнітолі, які надають публічне медіапідключення Android. Керувати іншими плеєрами Lirnyk буде лише через такі офіційні підключення (на наступному етапі). Доступу до сповіщень він не просить.", "Aplikacje na tym radiu udostępniające publiczne połączenie multimediów Androida. Lirnyk będzie sterować innymi odtwarzaczami tylko przez takie oficjalne połączenia (kolejny etap). Nie prosi o dostęp do powiadomień."),
+    "chk_players_none": ("None found", "Не знайдено", "Nie znaleziono"),
 }
 
 

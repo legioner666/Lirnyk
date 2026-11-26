@@ -5,23 +5,20 @@ import android.app.ActivityManager
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.media.MediaCodecList
 import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.DisplayMetrics
 import android.view.KeyEvent
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import app.lirnyk.core.media.ExternalPlayersProbe
 import app.lirnyk.core.media.KeyLog
 import app.lirnyk.core.media.Lirnyk
-import app.lirnyk.core.media.SessionAccessListener
-import app.lirnyk.core.media.SessionsProbe
 import app.lirnyk.core.media.StartupMetrics
 import app.lirnyk.core.media.Volumes
 import app.lirnyk.core.model.AudioFormats
@@ -72,12 +69,10 @@ class HeadUnitCheckActivity : BaseActivity() {
         form.button(getString(UiR.string.chk_share)) { share(r) }
         form.button(getString(UiR.string.chk_copy)) { copy(r) }
 
-        form.section(getString(UiR.string.chk_sessions_grant))
-        form.body(getString(UiR.string.chk_sessions_body))
-        if (!SessionsProbe.accessGranted(this)) {
-            form.button(getString(UiR.string.chk_sessions_grant)) { openListenerSettings() }
-            form.body(getString(UiR.string.chk_restricted_hint))
-        }
+        form.section(getString(UiR.string.chk_players))
+        form.body(getString(UiR.string.chk_players_body))
+        if (r.externalPlayers.isEmpty()) form.body(getString(UiR.string.chk_players_none), secondary = false)
+        r.externalPlayers.forEach { form.body(it, secondary = false) }
 
         form.section(getString(UiR.string.chk_title))
         form.body(r.toText())
@@ -107,13 +102,15 @@ class HeadUnitCheckActivity : BaseActivity() {
             decoders = decoders,
             library = HeadUnitReport.LibraryCounts(library.tracks.size, library.availableTracks.size, library.folders().size, Lirnyk.prefs.pickedFolders.value.size),
             keys = KeyLog.keys.value,
-            sessions = SessionsProbe.probe(this),
+            externalPlayers = externalPlayers,
             notificationPermission = notif,
             audioReadPermission = Lirnyk.library.hasAudioPermission(),
             bootReceiverAllowed = Build.VERSION.SDK_INT < 35 && Lirnyk.prefs.autoResume.value,
             startup = HeadUnitReport.Startup(StartupMetrics.firstFrameMs, StartupMetrics.serviceAfterBootMs),
         )
     }
+
+    private val externalPlayers: List<String> by lazy { ExternalPlayersProbe.list(this) }
 
     /** Queried once per screen: MediaCodecList is slow on head-unit processors. */
     private val decoders: Map<String, Boolean> by lazy {
@@ -132,17 +129,5 @@ class HeadUnitCheckActivity : BaseActivity() {
     private fun copy(r: HeadUnitReport) {
         getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText("Lirnyk", r.toText() + "\n\n" + r.toJson()))
         Toast.makeText(this, UiR.string.chk_copied, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun openListenerSettings() {
-        val component = ComponentName(this, SessionAccessListener::class.java)
-        val intents = buildList {
-            if (Build.VERSION.SDK_INT >= 30) add(Intent(Settings.ACTION_NOTIFICATION_LISTENER_DETAIL_SETTINGS).putExtra(Settings.EXTRA_NOTIFICATION_LISTENER_COMPONENT_NAME, component.flattenToString()))
-            add(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-        }
-        for (i in intents) {
-            try { startActivity(i); return } catch (_: ActivityNotFoundException) { }
-        }
-        Toast.makeText(this, UiR.string.chk_no_settings_screen, Toast.LENGTH_LONG).show()
     }
 }
